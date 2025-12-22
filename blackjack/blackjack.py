@@ -2,52 +2,74 @@ import random
 from art import logo
 
 def score_calculator(current_hand):
-    score = 0
-    for card in current_hand:
-        score += card
+    if sum(current_hand) == 21:
+        return 0
 
-    return score
+    if 11 in current_hand and sum(current_hand) > 21:
+        current_hand.remove(11)
+        current_hand.append(1)
 
-resume_game = True
-player_cards = []
-npc_cards = []
-player_score = 0
-npc_score = 0
-cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+    return sum(current_hand)
 
-play_game = input("Do you want to play a game of Balckjack? Type 'y' or 'n'").lower()
+def card_dealer():
+    cards = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10]
+    card = random.choice(cards)
+    return card
 
-if play_game == 'y':
+def win_decision(comp_score, user_score):
+    if comp_score == user_score:
+        return "Draw."
+    elif user_score > 21:
+        return f"You lose. Your score was: {user_score}"
+    elif comp_score > 21:
+        return f"Opponent loses with a score of: {comp_score}. Your score was: {user_score}. You win!"
+    elif user_score == 0:
+        return "Player has jackpot, player wins!"
+    elif comp_score == 0:
+        return "Lose, opponent has Blackjack."
+    elif user_score > comp_score:
+        return f"Your score was {user_score}, the opponent's score was {comp_score} You win!"
+    else:
+        return f"Your score was {user_score}, the opponent's score was {comp_score} You lose."
+
+
+def play_game():
+    resume_game = True
+    player_cards = []
+    npc_cards = []
+    player_score = -1
+    npc_score = -1
+
     print(logo)
-    continue_draw = True
-    while resume_game:
-        if len(player_cards) >= 2:
-            print(f"Your cards: {player_cards}")
-            if get_more_cards == 'y' or continue_draw == True:
-                player_cards.append(cards[random.randrange(0, 13)])
-            elif not npc_score > 16:
-                npc_cards.append(cards[random.randrange(0, 13)])
-            print(npc_cards)
-        else:
-            player_cards.append(cards[random.randrange(0, 13)])
 
-        player_score = score_calculator(current_hand=player_cards)
+    for i in range(0, 2):
+        player_cards.append(card_dealer())
+        npc_cards.append(card_dealer())
+
+    player_score = score_calculator(current_hand=player_cards)
+    npc_score = score_calculator(current_hand=npc_cards)
+
+    while resume_game:
+        print(f"Your cards:  {player_cards}\nYour current score: {player_score}")
+        print(f"Computer's first card: {npc_cards[0]}")
+        if player_score == 0 or npc_score == 0 or player_score > 21:
+            resume_game = False
+        else:
+            player_input = input("Type 'y' to get another card, type 'n' to pass: ")
+            if player_score <= 21 and player_input == 'y':
+                player_cards.append(card_dealer())
+                player_score = score_calculator(current_hand=player_cards)
+            elif player_input == 'n' or player_score > 21:
+                resume_game = False
+
+    while npc_score < 17:
+        npc_cards.append(card_dealer())
         npc_score = score_calculator(current_hand=npc_cards)
 
-        if player_score > 21:
-            resume_game = False
-            print(f"You lose. Your score was: {player_score}")
-        elif npc_score > 21:
-            resume_game = False
-            print(f"NPC loses with a score of: {npc_score}. Your score was: {player_score}. You win!")
-        elif player_score == 21:
-            resume_game = False
-            print("Player has jackpot, player wins!")
-        elif npc_score == 21:
-            resume_game = False
-            print("Lose, opponent has Blackjack.")
+    print(f"Player's final hand is: {player_cards}")
+    print(f"Opponent's final hand is: {npc_cards}")
+    print(win_decision(comp_score=npc_score, user_score=player_score))
 
-        get_more_cards = input("Type 'y' to get another card, type 'n' to pass: ")
-
-elif play_game =='n':
-    print("Ending game.")
+while input("Do you want to play a game of Blackjack? Type 'y' or 'n': "):
+    print("\n" * 20)
+    play_game()
